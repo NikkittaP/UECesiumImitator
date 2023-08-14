@@ -4,11 +4,19 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "UECesiumImitator.h"
 
-AOurScene::AOurScene() : CurrentPitch(0), PitchSign(false)
+namespace
+{
+const FString& TankPathFile = "../Data/TankPath.txt";
+}
+
+AOurScene::AOurScene()
 {
     PrimaryActorTick.bCanEverTick = true;
+
+    LoadData();
 }
 
 void AOurScene::UpdateUavCamera(FVector UavCoordinates, FRotator UavRotation)
@@ -44,12 +52,37 @@ void AOurScene::BeginPlay()
     if (FoundCesiumGeoreferences.Num() > 0)
         CesiumGeoreference = (ACesiumGeoreference*) FoundCesiumGeoreferences[0];
 
-    APlayerController* OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
-    OurPlayerController->Possess(CameraView);
+    //APlayerController* OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
+    //OurPlayerController->Possess(CameraView);
 }
 
 void AOurScene::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+}
+
+void AOurScene::LoadData()
+{
+    FString AbsoluteConfigFilePath = FPaths::ProjectConfigDir() + ::TankPathFile;
+
+    UE_LOG(LogUECI, Log, TEXT("Loading TankPath from file %s"), *AbsoluteConfigFilePath);
+
+    TArray<FString> Data;
+    FFileHelper::LoadFileToStringArray(Data, *AbsoluteConfigFilePath);
+
+    for (auto Str : Data)
+    {
+        int Pos = Str.Find(",");
+
+        FString Lon = Str.Left(Pos);
+        FString Lat = Str.RightChop(Pos + 1);
+
+        int Pos2 = Lat.Find(",");
+
+        Lat = Lat.Left(Pos2);
+
+        TankPathPoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
+                                   UKismetStringLibrary::Conv_StringToDouble(Lat), 0));
+    }
 }
 
 void AOurScene::ConvertWorldToUE(FVector AircraftCoordinates, FRotator AircraftRotation,
@@ -85,20 +118,10 @@ void AOurScene::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    if (!PitchSign)
-        CurrentPitch -= 0.1;
-    else
-        CurrentPitch += 0.1;
+    //UpdateUavCamera(FVector(38.149512, 55.572995, 300), FRotator(0, -90, CurrentPitch));
+}
 
-    if (CurrentPitch <= -50)
-    {
-        PitchSign = !PitchSign;
-    }
-
-    if (CurrentPitch >= 5)
-    {
-        PitchSign = !PitchSign;
-    }
-
-    UpdateUavCamera(FVector(38.149512, 55.572995, 300), FRotator(0, -90, CurrentPitch));
+TArray<FVector> AOurScene::GetTankPathPoints()
+{
+    return TankPathPoints;
 }

@@ -11,35 +11,38 @@
 UCLASS()
 class UECESIUMIMITATOR_API AOurScene : public AActor
 {
-	GENERATED_BODY()
-	
-public:
-	AOurScene();
+    GENERATED_BODY()
 
-	// FVector in degrees and meters (lon; lat; alt)
-	// FRotator in degrees (roll; yaw; pitch)
-	void UpdateUavCamera(FVector UavCoordinates, FRotator UavRotation);
+public:
+    AOurScene();
+
+    // FVector in degrees and meters (lon; lat; alt)
+    // FRotator in degrees (roll; yaw; pitch)
+    void UpdateUavCamera(FVector UavCoordinates, FRotator UavRotation);
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-private:
-	void ConvertWorldToUE(FVector AircraftCoordinates, FRotator AircraftRotation,
-		FVector* UEAircraftCoordinates, FRotator* UEAircraftRotation,
-		FMatrix* UELocalPlaneRotationMatrix);
-
-public:
-	virtual void Tick(float DeltaTime) override;
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		APawn* CameraView;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	ACesiumGeoreference* CesiumGeoreference;
+    void LoadData();
+    void ConvertWorldToUE(FVector AircraftCoordinates, FRotator AircraftRotation,
+                          FVector* UEAircraftCoordinates, FRotator* UEAircraftRotation,
+                          FMatrix* UELocalPlaneRotationMatrix);
 
-	float CurrentPitch;
-	bool PitchSign;
+public:
+    virtual void Tick(float DeltaTime) override;
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    APawn* CameraView;
+
+    UFUNCTION(BlueprintCallable)
+    TArray<FVector> GetTankPathPoints();
+
+private:
+    ACesiumGeoreference* CesiumGeoreference;
+
+    TArray<FVector> TankPathPoints;
 };
