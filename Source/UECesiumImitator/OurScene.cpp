@@ -9,7 +9,7 @@
 
 namespace
 {
-const FString& TankPathFile = "../Data/TankPath.txt";
+const FString& MovingVehiclesPathsFile = "../Data/MovingVehiclesPaths.txt";
 }
 
 AOurScene::AOurScene()
@@ -62,26 +62,54 @@ void AOurScene::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AOurScene::LoadData()
 {
-    FString AbsoluteConfigFilePath = FPaths::ProjectConfigDir() + ::TankPathFile;
+    FString AbsoluteConfigFilePath = FPaths::ProjectConfigDir() + ::MovingVehiclesPathsFile;
 
     UE_LOG(LogUECI, Log, TEXT("Loading TankPath from file %s"), *AbsoluteConfigFilePath);
 
     TArray<FString> Data;
     FFileHelper::LoadFileToStringArray(Data, *AbsoluteConfigFilePath);
 
+    FMovingVehicleData MovingVehicleData;
+    FString CurrentMovingVehicleName = "";
+    int CurrentSecondsToCompletePath = 0;
+    TArray<FVector> CurrentMovingVehiclePoints;
+    int num = 0;
     for (auto Str : Data)
     {
         int Pos = Str.Find(",");
 
-        FString Lon = Str.Left(Pos);
-        FString Lat = Str.RightChop(Pos + 1);
+        if (Pos == -1)
+        {
+            if (Str.IsEmpty())
+            {
+                num++;
+                MovingVehicleData.Name = CurrentMovingVehicleName;
+                MovingVehicleData.SecondsToCompletePath = CurrentSecondsToCompletePath;
+                MovingVehicleData.PointCoordinates = CurrentMovingVehiclePoints;
+                MovingVehiclesPathsPoints.Add(MovingVehicleData);
+                CurrentMovingVehiclePoints.Empty();
+            }
+            else
+            {
+                int PosN = Str.Find(" ");
+                CurrentMovingVehicleName = Str.Left(PosN);
+                CurrentSecondsToCompletePath = UKismetStringLibrary::Conv_StringToInt(
+                    Str.RightChop(PosN + 1));
+            }
+        }
+        else
+        {
+            FString Lon = Str.Left(Pos);
+            FString Lat = Str.RightChop(Pos + 1);
 
-        int Pos2 = Lat.Find(",");
+            int Pos2 = Lat.Find(",");
 
-        Lat = Lat.Left(Pos2);
+            Lat = Lat.Left(Pos2);
 
-        TankPathPoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
-                                   UKismetStringLibrary::Conv_StringToDouble(Lat), 0));
+            CurrentMovingVehiclePoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
+                                                   UKismetStringLibrary::Conv_StringToDouble(Lat),
+                                                   0));
+        }
     }
 }
 
@@ -121,7 +149,7 @@ void AOurScene::Tick(float DeltaTime)
     //UpdateUavCamera(FVector(38.149512, 55.572995, 300), FRotator(0, -90, CurrentPitch));
 }
 
-TArray<FVector> AOurScene::GetTankPathPoints()
+TArray<FMovingVehicleData> AOurScene::GetMovingVehiclesPathsPoints()
 {
-    return TankPathPoints;
+    return MovingVehiclesPathsPoints;
 }

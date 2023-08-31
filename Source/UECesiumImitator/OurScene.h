@@ -5,8 +5,24 @@
 #include "CesiumGeoreference.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Templates/Tuple.h"
 
 #include "OurScene.generated.h"
+
+USTRUCT(BlueprintType)
+struct FMovingVehicleData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FString Name;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    int SecondsToCompletePath;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TArray<FVector> PointCoordinates;
+};
 
 UCLASS()
 class UECESIUMIMITATOR_API AOurScene : public AActor
@@ -39,10 +55,10 @@ public:
     APawn* CameraView;
 
     UFUNCTION(BlueprintCallable)
-    TArray<FVector> GetTankPathPoints();
+    TArray<FMovingVehicleData> GetMovingVehiclesPathsPoints();
 
 private:
     ACesiumGeoreference* CesiumGeoreference;
 
-    TArray<FVector> TankPathPoints;
+    TArray<FMovingVehicleData> MovingVehiclesPathsPoints;
 };
