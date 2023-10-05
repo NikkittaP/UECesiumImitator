@@ -18,7 +18,22 @@ struct FMovingVehicleData
     FString Name;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
-    int SecondsToCompletePath;
+    float SecondsToCompletePath;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TArray<FVector> PointCoordinates;
+};
+
+USTRUCT(BlueprintType)
+struct FFlightPlanData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float Altitude;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float SecondsToCompletePath;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TArray<FVector> PointCoordinates;
@@ -57,8 +72,12 @@ public:
     UFUNCTION(BlueprintCallable)
     TArray<FMovingVehicleData> GetMovingVehiclesPathsPoints();
 
+    UFUNCTION(BlueprintCallable)
+    FFlightPlanData GetFlightPlanPoints();
+
 private:
     ACesiumGeoreference* CesiumGeoreference;
 
     TArray<FMovingVehicleData> MovingVehiclesPathsPoints;
+    FFlightPlanData FlightPlanData;
 };

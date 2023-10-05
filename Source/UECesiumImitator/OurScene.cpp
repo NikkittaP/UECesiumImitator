@@ -10,7 +10,10 @@
 namespace
 {
 const FString& MovingVehiclesPathsFile = "../Data/MovingVehiclesPaths.txt";
-}
+const FString& FlightPlanFile = "../Data/FlightPlan.txt";
+const FString& AltitudeTag = "altitude";
+const FString& SecondsTag = "seconds";
+} // namespace
 
 AOurScene::AOurScene()
 {
@@ -62,12 +65,14 @@ void AOurScene::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AOurScene::LoadData()
 {
-    FString AbsoluteConfigFilePath = FPaths::ProjectConfigDir() + ::MovingVehiclesPathsFile;
+    FString AbsoluteMovingVehiclesPathsFile = FPaths::ProjectConfigDir() +
+                                              ::MovingVehiclesPathsFile;
 
-    UE_LOG(LogUECI, Log, TEXT("Loading TankPath from file %s"), *AbsoluteConfigFilePath);
+    UE_LOG(LogUECI, Log, TEXT("Loading MovingVehiclesPaths from file %s"),
+           *AbsoluteMovingVehiclesPathsFile);
 
     TArray<FString> Data;
-    FFileHelper::LoadFileToStringArray(Data, *AbsoluteConfigFilePath);
+    FFileHelper::LoadFileToStringArray(Data, *AbsoluteMovingVehiclesPathsFile);
 
     FMovingVehicleData MovingVehicleData;
     FString CurrentMovingVehicleName = "";
@@ -93,7 +98,7 @@ void AOurScene::LoadData()
             {
                 int PosN = Str.Find(" ");
                 CurrentMovingVehicleName = Str.Left(PosN);
-                CurrentSecondsToCompletePath = UKismetStringLibrary::Conv_StringToInt(
+                CurrentSecondsToCompletePath = UKismetStringLibrary::Conv_StringToFloat(
                     Str.RightChop(PosN + 1));
             }
         }
@@ -111,6 +116,44 @@ void AOurScene::LoadData()
                                                    0));
         }
     }
+
+    Data.Reset();
+
+    FString AbsoluteFlightPlanFile = FPaths::ProjectConfigDir() + ::FlightPlanFile;
+
+    UE_LOG(LogUECI, Log, TEXT("Loading FlightPlan from file %s"), *AbsoluteFlightPlanFile);
+
+    FFileHelper::LoadFileToStringArray(Data, *AbsoluteFlightPlanFile);
+
+    TArray<FVector> CurrentFlightPlanPoints;
+    for (auto Str : Data)
+    {
+        int Pos = Str.Find(",");
+
+        if (Pos == -1)
+        {
+            int PosN = Str.Find(":");
+            if (Str.Left(PosN) == ::AltitudeTag)
+                FlightPlanData.Altitude = UKismetStringLibrary::Conv_StringToFloat(
+                    Str.RightChop(PosN + 1));
+            else if (Str.Left(PosN) == ::SecondsTag)
+                FlightPlanData.SecondsToCompletePath = UKismetStringLibrary::Conv_StringToFloat(
+                    Str.RightChop(PosN + 1));
+        }
+        else
+        {
+            FString Lon = Str.Left(Pos);
+            FString Lat = Str.RightChop(Pos + 1);
+
+            int Pos2 = Lat.Find(",");
+
+            Lat = Lat.Left(Pos2);
+
+            CurrentFlightPlanPoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
+                                                UKismetStringLibrary::Conv_StringToDouble(Lat), 0));
+        }
+    }
+    FlightPlanData.PointCoordinates = CurrentFlightPlanPoints;
 }
 
 void AOurScene::ConvertWorldToUE(FVector AircraftCoordinates, FRotator AircraftRotation,
@@ -152,4 +195,9 @@ void AOurScene::Tick(float DeltaTime)
 TArray<FMovingVehicleData> AOurScene::GetMovingVehiclesPathsPoints()
 {
     return MovingVehiclesPathsPoints;
+}
+
+FFlightPlanData AOurScene::GetFlightPlanPoints()
+{
+    return FlightPlanData;
 }
