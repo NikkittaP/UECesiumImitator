@@ -32,6 +32,11 @@
 				"Android",
 				"IOS"
 			]
+		},
+		{
+			"Name": "WM_InputManager_Plugin",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/7b2182710b35428ca9a79ad71959414c"
 		}
 	]
 }

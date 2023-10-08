@@ -75,6 +75,9 @@ public:
     UFUNCTION(BlueprintCallable)
     FFlightPlanData GetFlightPlanPoints();
 
+    UFUNCTION(BlueprintCallable)
+    FQuat InverseTransformRotationQuat(const FTransform& Transform, const FQuat& Rotation);
+
 private:
     ACesiumGeoreference* CesiumGeoreference;
 

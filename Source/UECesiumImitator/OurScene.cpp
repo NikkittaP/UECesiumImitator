@@ -201,3 +201,8 @@ FFlightPlanData AOurScene::GetFlightPlanPoints()
 {
     return FlightPlanData;
 }
+
+FQuat AOurScene::InverseTransformRotationQuat(const FTransform& Transform, const FQuat& Rotation)
+{
+    return Transform.InverseTransformRotation(Rotation);
+}
