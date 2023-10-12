@@ -19,4 +19,7 @@ public:
     /** Evaluates the value of a Runtime Float Curve using the given time. */
     UFUNCTION(BlueprintPure, Category = "Math|RuntimeFloatCurve")
     static float GetRuntimeFloatCurveValue(const FRuntimeFloatCurve& InCurve, float InTime);
+
+    UFUNCTION(BlueprintPure, Category = "Hud")
+    float GetObjectScreenRadius(UCameraComponent* InCamera, AActor* InActor);
 };
