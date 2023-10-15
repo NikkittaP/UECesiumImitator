@@ -4,7 +4,6 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetStringLibrary.h"
 #include "UECesiumImitator.h"
 
 namespace
@@ -98,8 +97,7 @@ void AOurScene::LoadData()
             {
                 int PosN = Str.Find(" ");
                 CurrentMovingVehicleName = Str.Left(PosN);
-                CurrentSecondsToCompletePath = UKismetStringLibrary::Conv_StringToFloat(
-                    Str.RightChop(PosN + 1));
+                CurrentSecondsToCompletePath = FCString::Atof(*Str.RightChop(PosN + 1));
             }
         }
         else
@@ -111,9 +109,7 @@ void AOurScene::LoadData()
 
             Lat = Lat.Left(Pos2);
 
-            CurrentMovingVehiclePoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
-                                                   UKismetStringLibrary::Conv_StringToDouble(Lat),
-                                                   0));
+            CurrentMovingVehiclePoints.Add(FVector(FCString::Atof(*Lon), FCString::Atof(*Lat), 0));
         }
     }
 
@@ -134,11 +130,9 @@ void AOurScene::LoadData()
         {
             int PosN = Str.Find(":");
             if (Str.Left(PosN) == ::AltitudeTag)
-                FlightPlanData.Altitude = UKismetStringLibrary::Conv_StringToFloat(
-                    Str.RightChop(PosN + 1));
+                FlightPlanData.Altitude = FCString::Atof(*Str.RightChop(PosN + 1));
             else if (Str.Left(PosN) == ::SecondsTag)
-                FlightPlanData.SecondsToCompletePath = UKismetStringLibrary::Conv_StringToFloat(
-                    Str.RightChop(PosN + 1));
+                FlightPlanData.SecondsToCompletePath = FCString::Atof(*Str.RightChop(PosN + 1));
         }
         else
         {
@@ -149,8 +143,7 @@ void AOurScene::LoadData()
 
             Lat = Lat.Left(Pos2);
 
-            CurrentFlightPlanPoints.Add(FVector(UKismetStringLibrary::Conv_StringToDouble(Lon),
-                                                UKismetStringLibrary::Conv_StringToDouble(Lat), 0));
+            CurrentFlightPlanPoints.Add(FVector(FCString::Atof(*Lon), FCString::Atof(*Lat), 0));
         }
     }
     FlightPlanData.PointCoordinates = CurrentFlightPlanPoints;
